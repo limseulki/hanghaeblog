@@ -65,6 +65,10 @@ public class PostService {
                 () -> new NullPointerException("해당 글이 존재하지 않습니다.")
         );
 
+        if(post.getUsername() != user.getUsername()) {
+            throw new IllegalArgumentException("다른 사람의 게시글은 수정 할 수 없습니다.");
+        }
+
         post.update(requestDto);
         return new ModifiedResponseDto(post);
     }
@@ -78,6 +82,10 @@ public class PostService {
         Post post = postRepository.findById(id).orElseThrow(
                 () -> new NullPointerException("해당 글이 존재하지 않습니다.")
         );
+
+        if(post.getUsername() != user.getUsername()) {
+            throw new IllegalArgumentException("다른 사람의 게시글은 삭제 할 수 없습니다.");
+        }
 
         postRepository.delete(post);
         return "게시글을 삭제했습니다.";

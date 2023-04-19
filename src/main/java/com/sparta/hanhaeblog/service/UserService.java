@@ -3,6 +3,7 @@ package com.sparta.hanhaeblog.service;
 import com.sparta.hanhaeblog.dto.LoginRequestDto;
 import com.sparta.hanhaeblog.dto.SignupRequestDto;
 import com.sparta.hanhaeblog.entity.User;
+import com.sparta.hanhaeblog.entity.UserRoleEnum;
 import com.sparta.hanhaeblog.jwt.JwtUtil;
 import com.sparta.hanhaeblog.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,8 @@ import java.util.regex.Pattern;
 public class UserService {
 
     private final UserRepository userRepository;
+    // ADMIN_TOKEN
+    private static final String ADMIN_TOKEN = "AAABnvxRVklrnYxKZ0aHgTBcXukeZygoC";
     private final JwtUtil jwtUtil;
 
     @Transactional
@@ -40,7 +43,16 @@ public class UserService {
                 throw new IllegalArgumentException("중복된 사용자가 존재합니다.");
             }
 
-            User user = new User(username, password);
+            // 사용자 ROLE 확인
+            UserRoleEnum role = UserRoleEnum.USER;
+            if (signupRequestDto.isAdmin()) {
+                if (!signupRequestDto.getAdminToken().equals(ADMIN_TOKEN)) {
+                    throw new IllegalArgumentException("관리자 암호가 틀려 등록이 불가능합니다.");
+                }
+                role = UserRoleEnum.ADMIN;
+            }
+
+            User user = new User(username, password, role);
             userRepository.save(user);
             return "회원가입 성공";
         }

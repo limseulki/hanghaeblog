@@ -16,4 +16,8 @@ public class SignupRequestDto {
     // 최소 8자 이상, 15자 이하
     @Size(min = 8, max = 15)
     private String password;
+
+    private boolean admin = false;
+
+    private String adminToken = "";
 }

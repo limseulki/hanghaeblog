@@ -32,14 +32,14 @@ public class CommentService {
         // 토큰 체크
         User user = checkJwtToken(request);
 
-        System.out.println(commentRequestDto.getPostId());
-        // 게시글 DB 저장 유무 확인
+        // 댓글 DB 저장 유무 확인
         Post post = postRepository.findById(commentRequestDto.getPostId()).orElseThrow(
-                () -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다.")
+                () -> new IllegalArgumentException("해당 댓글이 존재하지 않습니다.")
         );
 
         Comment comment = new Comment(commentRequestDto);
         comment.setUsername(user.getUsername());
+
         commentRepository.saveAndFlush(comment);
         return new CommentResponseDto(comment);
     }
@@ -57,12 +57,13 @@ public class CommentService {
         UserRoleEnum userRoleEnum = user.getRole();
         System.out.println("role = " + userRoleEnum);
 
+        // 권한 확인 후, 관리자가 아니면 작성자인지 확인
         if(userRoleEnum == UserRoleEnum.ADMIN) {
             comment.update(commentRequestDto);
             return new CommentResponseDto(comment);
         } else {
             if(comment.getUsername() != user.getUsername()) {
-                throw new IllegalArgumentException("다른 사람의 댓글은 수정 할 수 없습니다.");
+                throw new IllegalArgumentException("작성자만 수정할 수 있습니다.");
             }
 
             comment.update(commentRequestDto);
@@ -83,12 +84,13 @@ public class CommentService {
         UserRoleEnum userRoleEnum = user.getRole();
         System.out.println("role = " + userRoleEnum);
 
+        // 권한 확인 후, 관리자가 아니면 작성자인지 확인
         if(userRoleEnum == UserRoleEnum.ADMIN) {
             commentRepository.delete(comment);
             return "댓글 삭제 성공";
         } else {
             if(comment.getUsername() != user.getUsername()) {
-                throw new IllegalArgumentException("다른 사람의 댓글은 삭제 할 수 없습니다.");
+                throw new IllegalArgumentException("작성자만 삭제할 수 있습니다.");
             }
 
             commentRepository.delete(comment);
@@ -108,7 +110,7 @@ public class CommentService {
                 // 토큰에서 사용자 정보 가져오기
                 claims = jwtUtil.getUserInfoFromToken(token);
             } else {
-                throw new IllegalArgumentException("Token Error");
+                throw new IllegalArgumentException("토큰이 유효하지 않습니다.");
             }
 
             // 토큰에서 가져온 사용자 정보를 사용하여 DB 조회

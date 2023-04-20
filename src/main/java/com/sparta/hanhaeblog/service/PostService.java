@@ -137,8 +137,9 @@ public class PostService {
         return null;
     }
 
-    private List<CommentResponseDto> getCommentList(Long id) {
-        List<Comment> commentList = commentRepository.findAllByIdOrderByCreatedAtDesc(id);
+    private List<CommentResponseDto> getCommentList(Long postId) {
+        System.out.println(commentRepository.findById(postId));
+        List<Comment> commentList = commentRepository.findAllByPostIdOrderByCreatedAtDesc(postId);
         List<CommentResponseDto> commentResponseDtoList = new ArrayList<>();
         for(Comment comment : commentList) {
             commentResponseDtoList.add(new CommentResponseDto(comment));

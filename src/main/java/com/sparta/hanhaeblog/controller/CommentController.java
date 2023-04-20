@@ -15,17 +15,17 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping("")
-    public CommentResponseDto createPost(@RequestBody CommentRequestDto commentRequestDto, HttpServletRequest request) {
+    public CommentResponseDto createComment(@RequestBody CommentRequestDto commentRequestDto, HttpServletRequest request) {
         return commentService.createComment(commentRequestDto, request);
     }
 
     @PutMapping("/{id}")
-    public CommentResponseDto updatePost(@PathVariable Long id, @RequestBody CommentRequestDto commentRequestDto, HttpServletRequest request) {
+    public CommentResponseDto updateComment(@PathVariable Long id, @RequestBody CommentRequestDto commentRequestDto, HttpServletRequest request) {
         return commentService.updateComment(id, commentRequestDto, request);
     }
 
     @DeleteMapping("/{id}")
-    public String deletePost(@PathVariable Long id, HttpServletRequest request) {
+    public String deleteComment(@PathVariable Long id, HttpServletRequest request) {
         return commentService.deleteComment(id, request);
     }
 }

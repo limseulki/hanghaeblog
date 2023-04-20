@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +30,11 @@ public class CommentService {
     public CommentResponseDto createComment(CommentRequestDto commentRequestDto, HttpServletRequest request) {
         // 토큰 체크
         User user = checkJwtToken(request);
+
+        // 게시글 DB 저장 유무 확인
+        postRepository.findById(commentRequestDto.getPostId()).orElseThrow(
+                () -> new NoSuchElementException("게시글이 존재하지 않습니다.")
+        );
 
         Comment comment = commentRepository.saveAndFlush(new Comment(commentRequestDto, user));
         return new CommentResponseDto(comment);

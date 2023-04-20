@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -25,10 +27,12 @@ public class Post extends Timestamped {
     @Column(nullable = false)
     private String contents;
 
+    @OneToMany
+    private List<Comment> commentList = new ArrayList<>();
 
-    public Post(PostRequestDto requestDto) {
+    public Post(PostRequestDto requestDto, String username) {
         this.title = requestDto.getTitle();
-        this.username = requestDto.getUsername();
+        this.username = username;
         this.contents = requestDto.getContents();
     }
 

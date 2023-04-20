@@ -1,12 +1,15 @@
 package com.sparta.hanhaeblog.service;
 
+import com.sparta.hanhaeblog.dto.CommentResponseDto;
 import com.sparta.hanhaeblog.dto.ModifiedResponseDto;
 import com.sparta.hanhaeblog.dto.PostRequestDto;
 import com.sparta.hanhaeblog.dto.PostResponseDto;
+import com.sparta.hanhaeblog.entity.Comment;
 import com.sparta.hanhaeblog.entity.Post;
 import com.sparta.hanhaeblog.entity.User;
 import com.sparta.hanhaeblog.entity.UserRoleEnum;
 import com.sparta.hanhaeblog.jwt.JwtUtil;
+import com.sparta.hanhaeblog.repository.CommentRepository;
 import com.sparta.hanhaeblog.repository.PostRepository;
 import com.sparta.hanhaeblog.repository.UserRepository;
 import io.jsonwebtoken.Claims;
@@ -15,8 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +27,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
     private final JwtUtil jwtUtil;
 
 
@@ -33,18 +37,22 @@ public class PostService {
         // 토큰 체크
         User user = checkJwtToken(request);
 
-        Post post = new Post(requestDto);
-        post.setUsername(user.getUsername());
-        postRepository.saveAndFlush(post);
-        return new PostResponseDto(post);
+        List<CommentResponseDto> commentList = new ArrayList<>();
+
+        Post post = postRepository.saveAndFlush(new Post(requestDto, user.getUsername()));
+        return new PostResponseDto(post, commentList);
 
     }
-
 
     // 전체 Post 조회
     @Transactional(readOnly = true)
     public List<PostResponseDto> getPosts() {
-        return postRepository.findAllByOrderByCreatedAtDesc().stream().map(PostResponseDto::new).collect(Collectors.toList());
+        List<Post> posts = postRepository.findAllByOrderByCreatedAtDesc();
+        List<PostResponseDto> postList = new ArrayList<>();
+        for(Post post : posts) {
+            postList.add(new PostResponseDto(post, getCommentList(post.getId())));
+        }
+        return postList;
     }
 
     // 선택한 Post 조회
@@ -53,12 +61,12 @@ public class PostService {
         Post post = postRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException("해당 글이 존재하지 않습니다.")
         );
-        return new PostResponseDto(post);
+        return new PostResponseDto(post, getCommentList(id));
     }
 
     // 선택한 Post 수정
     @Transactional
-    public ModifiedResponseDto updatePost(Long id, PostRequestDto requestDto, HttpServletRequest request) {
+    public PostResponseDto updatePost(Long id, PostRequestDto requestDto, HttpServletRequest request) {
         // 토큰 체크
         User user = checkJwtToken(request);
 
@@ -67,18 +75,17 @@ public class PostService {
         );
 
         UserRoleEnum userRoleEnum = user.getRole();
-        System.out.println("role = " + userRoleEnum);
 
         if(userRoleEnum == UserRoleEnum.ADMIN) {
             post.update(requestDto);
-            return new ModifiedResponseDto(post);
+            return new PostResponseDto(post, getCommentList(id));
         } else {
             if(post.getUsername() != user.getUsername()) {
                 throw new IllegalArgumentException("다른 사람의 게시글은 수정 할 수 없습니다.");
             }
 
             post.update(requestDto);
-            return new ModifiedResponseDto(post);
+            return new PostResponseDto(post, getCommentList(id));
         }
     }
 
@@ -93,7 +100,6 @@ public class PostService {
         );
 
         UserRoleEnum userRoleEnum = user.getRole();
-        System.out.println("role = " + userRoleEnum);
 
         if(userRoleEnum == UserRoleEnum.ADMIN) {
             postRepository.delete(post);
@@ -107,7 +113,6 @@ public class PostService {
             return "게시글 삭제 성공";
         }
     }
-
 
     public User checkJwtToken(HttpServletRequest request) {
         // Request에서 Token 가져오기
@@ -131,6 +136,15 @@ public class PostService {
 
         }
         return null;
+    }
+
+    private List<CommentResponseDto> getCommentList(Long id) {
+        List<Comment> commentList = commentRepository.findAllByIdOrderByCreatedAtDesc(id);
+        List<CommentResponseDto> commentResponseDtoList = new ArrayList<>();
+        for(Comment comment : commentList) {
+            commentResponseDtoList.add(new CommentResponseDto(comment));
+        }
+        return commentResponseDtoList;
     }
 
 }

@@ -50,7 +50,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public void login(LoginRequestDto loginRequestDto, HttpServletResponse response) {
+    public String login(LoginRequestDto loginRequestDto, HttpServletResponse response) {
         String username = loginRequestDto.getUsername();
         String password = loginRequestDto.getPassword();
 
@@ -64,5 +64,6 @@ public class UserService {
             throw  new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
         response.addHeader(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createToken(user.getUsername()));
+        return "로그인 성공";
     }
 }

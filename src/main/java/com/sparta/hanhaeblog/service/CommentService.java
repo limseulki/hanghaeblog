@@ -1,12 +1,14 @@
 package com.sparta.hanhaeblog.service;
 
-import com.sparta.hanhaeblog.dto.ModifiedResponseDto;
-import com.sparta.hanhaeblog.dto.PostRequestDto;
+import com.sparta.hanhaeblog.dto.CommentRequestDto;
+import com.sparta.hanhaeblog.dto.CommentResponseDto;
 import com.sparta.hanhaeblog.dto.PostResponseDto;
+import com.sparta.hanhaeblog.entity.Comment;
 import com.sparta.hanhaeblog.entity.Post;
 import com.sparta.hanhaeblog.entity.User;
 import com.sparta.hanhaeblog.entity.UserRoleEnum;
 import com.sparta.hanhaeblog.jwt.JwtUtil;
+import com.sparta.hanhaeblog.repository.CommentRepository;
 import com.sparta.hanhaeblog.repository.PostRepository;
 import com.sparta.hanhaeblog.repository.UserRepository;
 import io.jsonwebtoken.Claims;
@@ -15,96 +17,82 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class PostService {
+public class CommentService {
 
-    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
     private final UserRepository userRepository;
+    private final PostRepository postRepository;
     private final JwtUtil jwtUtil;
 
-
-    // Post 작성
     @Transactional
-    public PostResponseDto createPost(PostRequestDto requestDto, HttpServletRequest request) {
+    public CommentResponseDto createComment(CommentRequestDto commentRequestDto, HttpServletRequest request) {
         // 토큰 체크
         User user = checkJwtToken(request);
 
-        Post post = new Post(requestDto);
-        post.setUsername(user.getUsername());
-        postRepository.saveAndFlush(post);
-        return new PostResponseDto(post);
-
-    }
-
-
-    // 전체 Post 조회
-    @Transactional(readOnly = true)
-    public List<PostResponseDto> getPosts() {
-        return postRepository.findAllByOrderByCreatedAtDesc().stream().map(PostResponseDto::new).collect(Collectors.toList());
-    }
-
-    // 선택한 Post 조회
-    @Transactional(readOnly = true)
-    public PostResponseDto getPost(Long id) {
-        Post post = postRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("해당 글이 존재하지 않습니다.")
+        System.out.println(commentRequestDto.getPostId());
+        // 게시글 DB 저장 유무 확인
+        Post post = postRepository.findById(commentRequestDto.getPostId()).orElseThrow(
+                () -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다.")
         );
-        return new PostResponseDto(post);
+
+        Comment comment = new Comment(commentRequestDto);
+        comment.setUsername(user.getUsername());
+        commentRepository.saveAndFlush(comment);
+        return new CommentResponseDto(comment);
     }
 
-    // 선택한 Post 수정
     @Transactional
-    public ModifiedResponseDto updatePost(Long id, PostRequestDto requestDto, HttpServletRequest request) {
+    public CommentResponseDto updateComment(Long id, CommentRequestDto commentRequestDto, HttpServletRequest request) {
         // 토큰 체크
         User user = checkJwtToken(request);
 
-        Post post = postRepository.findById(id).orElseThrow(
-                () -> new NullPointerException("해당 글이 존재하지 않습니다.")
+        // 댓글 DB 저장 유무 확인
+        Comment comment = commentRepository.findById(id).orElseThrow(
+                () -> new NullPointerException("해당 댓글이 존재하지 않습니다.")
         );
 
         UserRoleEnum userRoleEnum = user.getRole();
         System.out.println("role = " + userRoleEnum);
 
         if(userRoleEnum == UserRoleEnum.ADMIN) {
-            post.update(requestDto);
-            return new ModifiedResponseDto(post);
+            comment.update(commentRequestDto);
+            return new CommentResponseDto(comment);
         } else {
-            if(post.getUsername() != user.getUsername()) {
-                throw new IllegalArgumentException("다른 사람의 게시글은 수정 할 수 없습니다.");
+            if(comment.getUsername() != user.getUsername()) {
+                throw new IllegalArgumentException("다른 사람의 댓글은 수정 할 수 없습니다.");
             }
 
-            post.update(requestDto);
-            return new ModifiedResponseDto(post);
+            comment.update(commentRequestDto);
+            return new CommentResponseDto(comment);
         }
     }
 
-    // 선택한 Post 삭제
     @Transactional
-    public String deletePost(Long id, HttpServletRequest request) {
+    public String deleteComment(Long id, HttpServletRequest request) {
         // 토큰 체크
         User user = checkJwtToken(request);
 
-        Post post = postRepository.findById(id).orElseThrow(
-                () -> new NullPointerException("해당 글이 존재하지 않습니다.")
+        // 댓글 DB 저장 유무 확인
+        Comment comment = commentRepository.findById(id).orElseThrow(
+                () -> new NullPointerException("해당 댓글이 존재하지 않습니다.")
         );
 
         UserRoleEnum userRoleEnum = user.getRole();
         System.out.println("role = " + userRoleEnum);
 
         if(userRoleEnum == UserRoleEnum.ADMIN) {
-            postRepository.delete(post);
-            return "게시글 삭제 성공";
+            commentRepository.delete(comment);
+            return "댓글 삭제 성공";
         } else {
-            if(post.getUsername() != user.getUsername()) {
-                throw new IllegalArgumentException("다른 사람의 게시글은 삭제 할 수 없습니다.");
+            if(comment.getUsername() != user.getUsername()) {
+                throw new IllegalArgumentException("다른 사람의 댓글은 삭제 할 수 없습니다.");
             }
 
-            postRepository.delete(post);
-            return "게시글 삭제 성공";
+            commentRepository.delete(comment);
+            return "댓글 삭제 성공";
         }
     }
 
@@ -113,7 +101,7 @@ public class PostService {
         // Request에서 Token 가져오기
         String token = jwtUtil.resolveToken(request);
         Claims claims;
-        
+
         // 토큰이 있는 경우에만 게시글 접근 가능
         if (token != null) {
             if (jwtUtil.validateToken(token)) {

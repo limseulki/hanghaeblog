@@ -1,7 +1,6 @@
 package com.sparta.hanhaeblog.dto;
 
 import com.sparta.hanhaeblog.entity.Comment;
-import com.sparta.hanhaeblog.entity.Post;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -21,6 +20,6 @@ public class CommentResponseDto {
         this.contents = comment.getContent();
         this.createdAt = comment.getCreatedAt();
         this.modifiedAt = comment.getModifiedAt();
-        this.username = comment.getUsername();
+        this.username = comment.getUser().getUsername();
     }
 }

@@ -3,12 +3,10 @@ package com.sparta.hanhaeblog.entity;
 import com.sparta.hanhaeblog.dto.CommentRequestDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import javax.persistence.*;
 
 @Getter
-@Setter
 @Entity
 @NoArgsConstructor
 public class Comment extends Timestamped {
@@ -18,21 +16,24 @@ public class Comment extends Timestamped {
     private Long id;
 
     @Column(nullable = false)
-    private String content;
-
-    @Column(nullable = false)
-    private String username;
-
-    @Column(nullable = false)
     private Long postId;
 
-    public Comment(CommentRequestDto commentRequestDto) {
-        this.content = commentRequestDto.getContent();
-        this.username = commentRequestDto.getUsername();
+    @Column(nullable = false)
+    private String content;
+
+    @ManyToOne
+    @JoinColumn(name = "USER_ID", nullable = false)
+    private User user;
+
+    public Comment(CommentRequestDto commentRequestDto, User user) {
         this.postId = commentRequestDto.getPostId();
+        this.content = commentRequestDto.getContent();
+        this.user= user;
     }
 
-    public void update(CommentRequestDto commentRequestDto) {
+    public void update(CommentRequestDto commentRequestDto, User user) {
+        this.postId = commentRequestDto.getPostId();
         this.content = commentRequestDto.getContent();
+        this.user = user;
     }
 }

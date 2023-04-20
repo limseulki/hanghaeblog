@@ -2,9 +2,7 @@ package com.sparta.hanhaeblog.service;
 
 import com.sparta.hanhaeblog.dto.CommentRequestDto;
 import com.sparta.hanhaeblog.dto.CommentResponseDto;
-import com.sparta.hanhaeblog.dto.PostResponseDto;
 import com.sparta.hanhaeblog.entity.Comment;
-import com.sparta.hanhaeblog.entity.Post;
 import com.sparta.hanhaeblog.entity.User;
 import com.sparta.hanhaeblog.entity.UserRoleEnum;
 import com.sparta.hanhaeblog.jwt.JwtUtil;
@@ -32,15 +30,7 @@ public class CommentService {
         // 토큰 체크
         User user = checkJwtToken(request);
 
-        // 댓글 DB 저장 유무 확인
-        Post post = postRepository.findById(commentRequestDto.getPostId()).orElseThrow(
-                () -> new IllegalArgumentException("해당 댓글이 존재하지 않습니다.")
-        );
-
-        Comment comment = new Comment(commentRequestDto);
-        comment.setUsername(user.getUsername());
-
-        commentRepository.saveAndFlush(comment);
+        Comment comment = commentRepository.saveAndFlush(new Comment(commentRequestDto, user));
         return new CommentResponseDto(comment);
     }
 
@@ -55,18 +45,17 @@ public class CommentService {
         );
 
         UserRoleEnum userRoleEnum = user.getRole();
-        System.out.println("role = " + userRoleEnum);
 
         // 권한 확인 후, 관리자가 아니면 작성자인지 확인
         if(userRoleEnum == UserRoleEnum.ADMIN) {
-            comment.update(commentRequestDto);
+            comment.update(commentRequestDto, user);
             return new CommentResponseDto(comment);
         } else {
-            if(comment.getUsername() != user.getUsername()) {
+            if(comment.getUser().getUsername() != user.getUsername()) {
                 throw new IllegalArgumentException("작성자만 수정할 수 있습니다.");
             }
 
-            comment.update(commentRequestDto);
+            comment.update(commentRequestDto, user);
             return new CommentResponseDto(comment);
         }
     }
@@ -82,14 +71,13 @@ public class CommentService {
         );
 
         UserRoleEnum userRoleEnum = user.getRole();
-        System.out.println("role = " + userRoleEnum);
 
         // 권한 확인 후, 관리자가 아니면 작성자인지 확인
         if(userRoleEnum == UserRoleEnum.ADMIN) {
             commentRepository.delete(comment);
             return "댓글 삭제 성공";
         } else {
-            if(comment.getUsername() != user.getUsername()) {
+            if(comment.getUser().getUsername() != user.getUsername()) {
                 throw new IllegalArgumentException("작성자만 삭제할 수 있습니다.");
             }
 

@@ -5,6 +5,7 @@ import com.sparta.hanhaeblog.dto.PostRequestDto;
 import com.sparta.hanhaeblog.dto.PostResponseDto;
 import com.sparta.hanhaeblog.entity.Post;
 import com.sparta.hanhaeblog.entity.User;
+import com.sparta.hanhaeblog.entity.UserRoleEnum;
 import com.sparta.hanhaeblog.jwt.JwtUtil;
 import com.sparta.hanhaeblog.repository.PostRepository;
 import com.sparta.hanhaeblog.repository.UserRepository;
@@ -65,12 +66,20 @@ public class PostService {
                 () -> new NullPointerException("해당 글이 존재하지 않습니다.")
         );
 
-        if(post.getUsername() != user.getUsername()) {
-            throw new IllegalArgumentException("다른 사람의 게시글은 수정 할 수 없습니다.");
-        }
+        UserRoleEnum userRoleEnum = user.getRole();
+        System.out.println("role = " + userRoleEnum);
 
-        post.update(requestDto);
-        return new ModifiedResponseDto(post);
+        if(userRoleEnum == UserRoleEnum.ADMIN) {
+            post.update(requestDto);
+            return new ModifiedResponseDto(post);
+        } else {
+            if(post.getUsername() != user.getUsername()) {
+                throw new IllegalArgumentException("다른 사람의 게시글은 수정 할 수 없습니다.");
+            }
+
+            post.update(requestDto);
+            return new ModifiedResponseDto(post);
+        }
     }
 
     // 선택한 Post 삭제
@@ -83,13 +92,20 @@ public class PostService {
                 () -> new NullPointerException("해당 글이 존재하지 않습니다.")
         );
 
-        if(post.getUsername() != user.getUsername()) {
-            throw new IllegalArgumentException("다른 사람의 게시글은 삭제 할 수 없습니다.");
+        UserRoleEnum userRoleEnum = user.getRole();
+        System.out.println("role = " + userRoleEnum);
+
+        if(userRoleEnum == UserRoleEnum.ADMIN) {
+            postRepository.delete(post);
+            return "게시글을 삭제했습니다.";
+        } else {
+            if(post.getUsername() != user.getUsername()) {
+                throw new IllegalArgumentException("다른 사람의 게시글은 삭제 할 수 없습니다.");
+            }
+
+            postRepository.delete(post);
+            return "게시글을 삭제했습니다.";
         }
-
-        postRepository.delete(post);
-        return "게시글을 삭제했습니다.";
-
     }
 
 

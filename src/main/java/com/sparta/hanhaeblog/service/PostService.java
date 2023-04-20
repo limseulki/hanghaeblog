@@ -1,7 +1,6 @@
 package com.sparta.hanhaeblog.service;
 
 import com.sparta.hanhaeblog.dto.CommentResponseDto;
-import com.sparta.hanhaeblog.dto.ModifiedResponseDto;
 import com.sparta.hanhaeblog.dto.PostRequestDto;
 import com.sparta.hanhaeblog.dto.PostResponseDto;
 import com.sparta.hanhaeblog.entity.Comment;

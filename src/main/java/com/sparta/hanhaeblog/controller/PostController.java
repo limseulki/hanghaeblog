@@ -1,6 +1,5 @@
 package com.sparta.hanhaeblog.controller;
 
-import com.sparta.hanhaeblog.dto.ModifiedResponseDto;
 import com.sparta.hanhaeblog.dto.PostRequestDto;
 import com.sparta.hanhaeblog.dto.PostResponseDto;
 import com.sparta.hanhaeblog.service.PostService;

@@ -1,5 +1,7 @@
 package com.sparta.hanhaeblog.service;
 
+import com.sparta.hanhaeblog.Exception.CustomException;
+import com.sparta.hanhaeblog.Message.Message;
 import com.sparta.hanhaeblog.dto.CommentRequestDto;
 import com.sparta.hanhaeblog.dto.CommentResponseDto;
 import com.sparta.hanhaeblog.entity.Comment;
@@ -15,7 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.NoSuchElementException;
+
+import static com.sparta.hanhaeblog.Exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +29,7 @@ public class CommentService {
     private final PostRepository postRepository;
     private final JwtUtil jwtUtil;
 
+    // 댓글 작성
     @Transactional
     public CommentResponseDto createComment(CommentRequestDto commentRequestDto, HttpServletRequest request) {
         // 토큰 체크
@@ -33,13 +37,13 @@ public class CommentService {
 
         // 게시글 DB 저장 유무 확인
         postRepository.findById(commentRequestDto.getPostId()).orElseThrow(
-                () -> new NoSuchElementException("게시글이 존재하지 않습니다.")
+                () -> new CustomException(POST_NOT_FOUND)
         );
-
         Comment comment = commentRepository.saveAndFlush(new Comment(commentRequestDto, user));
         return new CommentResponseDto(comment);
     }
 
+    // 댓글 수정
     @Transactional
     public CommentResponseDto updateComment(Long id, CommentRequestDto commentRequestDto, HttpServletRequest request) {
         // 토큰 체크
@@ -47,7 +51,7 @@ public class CommentService {
 
         // 댓글 DB 저장 유무 확인
         Comment comment = commentRepository.findById(id).orElseThrow(
-                () -> new NullPointerException("해당 댓글이 존재하지 않습니다.")
+                () -> new CustomException(COMMENT_NOT_FOUND)
         );
 
         UserRoleEnum userRoleEnum = user.getRole();
@@ -58,7 +62,7 @@ public class CommentService {
             return new CommentResponseDto(comment);
         } else {
             if(comment.getUser().getUsername() != user.getUsername()) {
-                throw new IllegalArgumentException("작성자만 수정할 수 있습니다.");
+                throw new CustomException(AUTHOR_NOT_SAME_MOD);
             }
 
             comment.update(commentRequestDto, user);
@@ -66,14 +70,15 @@ public class CommentService {
         }
     }
 
+    // 댓글 삭제
     @Transactional
-    public String deleteComment(Long id, HttpServletRequest request) {
+    public Message deleteComment(Long id, HttpServletRequest request) {
         // 토큰 체크
         User user = checkJwtToken(request);
 
         // 댓글 DB 저장 유무 확인
         Comment comment = commentRepository.findById(id).orElseThrow(
-                () -> new NullPointerException("해당 댓글이 존재하지 않습니다.")
+                () -> new CustomException(COMMENT_NOT_FOUND)
         );
 
         UserRoleEnum userRoleEnum = user.getRole();
@@ -81,14 +86,14 @@ public class CommentService {
         // 권한 확인 후, 관리자가 아니면 작성자인지 확인
         if(userRoleEnum == UserRoleEnum.ADMIN) {
             commentRepository.delete(comment);
-            return "댓글 삭제 성공";
+            return new Message("댓글 삭제 성공", 200);
         } else {
             if(comment.getUser().getUsername() != user.getUsername()) {
-                throw new IllegalArgumentException("작성자만 삭제할 수 있습니다.");
+                throw new CustomException(AUTHOR_NOT_SAME_DEL);
             }
 
             commentRepository.delete(comment);
-            return "댓글 삭제 성공";
+            return new Message("댓글 삭제 성공", 200);
         }
     }
 
@@ -104,12 +109,12 @@ public class CommentService {
                 // 토큰에서 사용자 정보 가져오기
                 claims = jwtUtil.getUserInfoFromToken(token);
             } else {
-                throw new IllegalArgumentException("토큰이 유효하지 않습니다.");
+                throw new CustomException(INVALIDATED_TOKEN);
             }
 
             // 토큰에서 가져온 사용자 정보를 사용하여 DB 조회
             User user = userRepository.findByUsername(claims.getSubject()).orElseThrow(
-                    () -> new IllegalArgumentException("사용자가 존재하지 않습니다.")
+                    () -> new CustomException(CANNOT_FOUND_USERNAME)
             );
             return user;
 

@@ -1,5 +1,6 @@
 package com.sparta.hanhaeblog.controller;
 
+import com.sparta.hanhaeblog.Message.Message;
 import com.sparta.hanhaeblog.dto.*;
 import com.sparta.hanhaeblog.service.CommentService;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/{id}")
-    public String deleteComment(@PathVariable Long id, HttpServletRequest request) {
+    public Message deleteComment(@PathVariable Long id, HttpServletRequest request) {
         return commentService.deleteComment(id, request);
     }
 }

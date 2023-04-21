@@ -1,5 +1,6 @@
 package com.sparta.hanhaeblog.service;
 
+import com.sparta.hanhaeblog.Exception.CustomException;
 import com.sparta.hanhaeblog.dto.CommentResponseDto;
 import com.sparta.hanhaeblog.dto.PostRequestDto;
 import com.sparta.hanhaeblog.dto.PostResponseDto;
@@ -19,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.sparta.hanhaeblog.Exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +61,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public PostResponseDto getPost(Long id) {
         Post post = postRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("해당 글이 존재하지 않습니다.")
+                () -> new CustomException(POST_NOT_FOUND)
         );
         return new PostResponseDto(post, getCommentList(id));
     }
@@ -70,7 +73,7 @@ public class PostService {
         User user = checkJwtToken(request);
 
         Post post = postRepository.findById(id).orElseThrow(
-                () -> new NullPointerException("해당 글이 존재하지 않습니다.")
+                () -> new CustomException(POST_NOT_FOUND)
         );
 
         UserRoleEnum userRoleEnum = user.getRole();
@@ -80,7 +83,7 @@ public class PostService {
             return new PostResponseDto(post, getCommentList(id));
         } else {
             if(post.getUsername() != user.getUsername()) {
-                throw new IllegalArgumentException("다른 사람의 게시글은 수정 할 수 없습니다.");
+                throw new CustomException(AUTHOR_NOT_SAME_MOD);
             }
 
             post.update(requestDto);
@@ -95,7 +98,7 @@ public class PostService {
         User user = checkJwtToken(request);
 
         Post post = postRepository.findById(id).orElseThrow(
-                () -> new NullPointerException("해당 글이 존재하지 않습니다.")
+                () -> new CustomException(POST_NOT_FOUND)
         );
 
         UserRoleEnum userRoleEnum = user.getRole();
@@ -106,7 +109,7 @@ public class PostService {
             return "게시글 삭제 성공";
         } else {
             if(post.getUsername() != user.getUsername()) {
-                throw new IllegalArgumentException("다른 사람의 게시글은 삭제 할 수 없습니다.");
+                throw new CustomException(AUTHOR_NOT_SAME_DEL);
             }
             commentRepository.deleteAllByPostId(id);
             postRepository.delete(post);
@@ -130,7 +133,7 @@ public class PostService {
 
             // 토큰에서 가져온 사용자 정보를 사용하여 DB 조회
             User user = userRepository.findByUsername(claims.getSubject()).orElseThrow(
-                    () -> new IllegalArgumentException("사용자가 존재하지 않습니다.")
+                    () -> new CustomException(CANNOT_FOUND_USER)
             );
             return user;
 

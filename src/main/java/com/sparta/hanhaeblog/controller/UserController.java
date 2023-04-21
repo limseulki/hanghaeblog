@@ -1,4 +1,5 @@
 package com.sparta.hanhaeblog.controller;
+import com.sparta.hanhaeblog.Message.Message;
 import com.sparta.hanhaeblog.dto.LoginRequestDto;
 import com.sparta.hanhaeblog.dto.SignupRequestDto;
 import com.sparta.hanhaeblog.service.UserService;
@@ -19,14 +20,13 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/signup")
-    public String signup(@Valid SignupRequestDto signupRequestDto) {
+    public Message signup(@Valid SignupRequestDto signupRequestDto) {
         return userService.signup(signupRequestDto);
     }
 
     @ResponseBody
     @PostMapping("/login")
-    public String login(LoginRequestDto loginRequestDto, HttpServletResponse response) {
-        userService.login(loginRequestDto, response);
-        return "로그인 성공";
+    public Message login(LoginRequestDto loginRequestDto, HttpServletResponse response) {
+        return userService.login(loginRequestDto, response);
     }
 }

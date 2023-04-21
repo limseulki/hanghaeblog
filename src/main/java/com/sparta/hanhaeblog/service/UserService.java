@@ -1,5 +1,7 @@
 package com.sparta.hanhaeblog.service;
 
+import com.sparta.hanhaeblog.Exception.CustomException;
+import com.sparta.hanhaeblog.Message.Message;
 import com.sparta.hanhaeblog.dto.LoginRequestDto;
 import com.sparta.hanhaeblog.dto.SignupRequestDto;
 import com.sparta.hanhaeblog.entity.User;
@@ -13,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 
+import static com.sparta.hanhaeblog.Exception.ErrorCode.*;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -23,7 +27,7 @@ public class UserService {
     private final JwtUtil jwtUtil;
 
     @Transactional
-    public String signup(SignupRequestDto signupRequestDto) {
+    public Message signup(SignupRequestDto signupRequestDto) {
         String username = signupRequestDto.getUsername();
         String password = signupRequestDto.getPassword();
 
@@ -31,38 +35,38 @@ public class UserService {
         // 회원 중복 확인
         Optional<User> found = userRepository.findByUsername(username);
         if (found.isPresent()) {
-            throw new IllegalArgumentException("중복된 username 입니다.");
+            throw new CustomException(EXIST_USERNAME);
         }
 
         // 사용자 ROLE 확인
         UserRoleEnum role = UserRoleEnum.USER;
         if (signupRequestDto.isAdmin()) {
             if (!signupRequestDto.getAdminToken().equals(ADMIN_TOKEN)) {
-                    throw new IllegalArgumentException("관리자 암호가 틀려 등록이 불가능합니다.");
+                    throw new CustomException(NOT_MATCH_ADMIN_TOKEN);
             }
             role = UserRoleEnum.ADMIN;
         }
 
         User user = new User(username, password, role);
         userRepository.save(user);
-        return "회원가입 성공";
+        return new Message("회원가입 성공", 200);
     }
 
     @Transactional(readOnly = true)
-    public String login(LoginRequestDto loginRequestDto, HttpServletResponse response) {
+    public Message login(LoginRequestDto loginRequestDto, HttpServletResponse response) {
         String username = loginRequestDto.getUsername();
         String password = loginRequestDto.getPassword();
 
         // 사용자 확인
         User user = userRepository.findByUsername(username).orElseThrow(
-                () -> new IllegalArgumentException("회원을 찾을 수 없습니다.")
+                () -> new CustomException(CANNOT_FOUND_USER)
         );
 
         // 비밀번호 확인
         if(!user.getPassword().equals(password)){
-            throw  new IllegalArgumentException("회원을 찾을 수 없습니다.");
+            throw  new CustomException(CANNOT_FOUND_USER);
         }
         response.addHeader(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createToken(user.getUsername()));
-        return "로그인 성공";
+        return new Message("로그인 성공", 200);
     }
 }

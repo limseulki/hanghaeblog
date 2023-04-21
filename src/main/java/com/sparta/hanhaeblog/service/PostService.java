@@ -101,13 +101,14 @@ public class PostService {
         UserRoleEnum userRoleEnum = user.getRole();
 
         if(userRoleEnum == UserRoleEnum.ADMIN) {
+            commentRepository.deleteAllByPostId(id);
             postRepository.delete(post);
             return "게시글 삭제 성공";
         } else {
             if(post.getUsername() != user.getUsername()) {
                 throw new IllegalArgumentException("다른 사람의 게시글은 삭제 할 수 없습니다.");
             }
-
+            commentRepository.deleteAllByPostId(id);
             postRepository.delete(post);
             return "게시글 삭제 성공";
         }
@@ -138,7 +139,6 @@ public class PostService {
     }
 
     private List<CommentResponseDto> getCommentList(Long postId) {
-        System.out.println(commentRepository.findById(postId));
         List<Comment> commentList = commentRepository.findAllByPostIdOrderByCreatedAtDesc(postId);
         List<CommentResponseDto> commentResponseDtoList = new ArrayList<>();
         for(Comment comment : commentList) {

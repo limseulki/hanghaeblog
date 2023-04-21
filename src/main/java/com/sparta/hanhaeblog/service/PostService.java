@@ -1,6 +1,7 @@
 package com.sparta.hanhaeblog.service;
 
 import com.sparta.hanhaeblog.Exception.CustomException;
+import com.sparta.hanhaeblog.Message.Message;
 import com.sparta.hanhaeblog.dto.CommentResponseDto;
 import com.sparta.hanhaeblog.dto.PostRequestDto;
 import com.sparta.hanhaeblog.dto.PostResponseDto;
@@ -72,49 +73,44 @@ public class PostService {
         // 토큰 체크
         User user = checkJwtToken(request);
 
-        Post post = postRepository.findById(id).orElseThrow(
-                () -> new CustomException(POST_NOT_FOUND)
-        );
-
         UserRoleEnum userRoleEnum = user.getRole();
 
+        Post post;
         if(userRoleEnum == UserRoleEnum.ADMIN) {
-            post.update(requestDto);
-            return new PostResponseDto(post, getCommentList(id));
+            post = postRepository.findById(id).orElseThrow(
+                    () -> new CustomException(POST_NOT_FOUND)
+            );
         } else {
-            if(post.getUsername() != user.getUsername()) {
-                throw new CustomException(AUTHOR_NOT_SAME_MOD);
-            }
-
-            post.update(requestDto);
-            return new PostResponseDto(post, getCommentList(id));
+            post = postRepository.findByIdAndUsername(id, user.getUsername()).orElseThrow(
+                    () -> new CustomException(AUTHOR_NOT_SAME_MOD)
+            );
         }
+        post.update(requestDto);
+        return new PostResponseDto(post, getCommentList(id));
     }
 
     // 선택한 Post 삭제
     @Transactional
-    public String deletePost(Long id, HttpServletRequest request) {
+    public Message deletePost(Long id, HttpServletRequest request) {
         // 토큰 체크
         User user = checkJwtToken(request);
 
-        Post post = postRepository.findById(id).orElseThrow(
-                () -> new CustomException(POST_NOT_FOUND)
-        );
-
         UserRoleEnum userRoleEnum = user.getRole();
 
+        Post post;
         if(userRoleEnum == UserRoleEnum.ADMIN) {
-            commentRepository.deleteAllByPostId(id);
-            postRepository.delete(post);
-            return "게시글 삭제 성공";
+            post = postRepository.findById(id).orElseThrow(
+                    () -> new CustomException(POST_NOT_FOUND)
+            );
         } else {
-            if(post.getUsername() != user.getUsername()) {
-                throw new CustomException(AUTHOR_NOT_SAME_DEL);
-            }
-            commentRepository.deleteAllByPostId(id);
-            postRepository.delete(post);
-            return "게시글 삭제 성공";
+            postRepository.findByIdAndUsername(id, user.getUsername()).orElseThrow(
+                    () -> new CustomException(AUTHOR_NOT_SAME_DEL)
+            );
         }
+
+        commentRepository.deleteAllByPostId(id);
+        postRepository.deleteById(id);
+        return new Message("게시글 삭제 성공", 200);
     }
 
     public User checkJwtToken(HttpServletRequest request) {

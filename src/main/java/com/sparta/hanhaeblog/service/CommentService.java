@@ -49,25 +49,21 @@ public class CommentService {
         // 토큰 체크
         User user = checkJwtToken(request);
 
-        // 댓글 DB 저장 유무 확인
-        Comment comment = commentRepository.findById(id).orElseThrow(
-                () -> new CustomException(COMMENT_NOT_FOUND)
-        );
-
         UserRoleEnum userRoleEnum = user.getRole();
 
+        Comment comment;
         // 권한 확인 후, 관리자가 아니면 작성자인지 확인
         if(userRoleEnum == UserRoleEnum.ADMIN) {
-            comment.update(commentRequestDto, user);
-            return new CommentResponseDto(comment);
+             comment = commentRepository.findById(id).orElseThrow(
+                    () -> new CustomException(COMMENT_NOT_FOUND)
+            );
         } else {
-            if(comment.getUser().getUsername() != user.getUsername()) {
-                throw new CustomException(AUTHOR_NOT_SAME_MOD);
-            }
-
-            comment.update(commentRequestDto, user);
-            return new CommentResponseDto(comment);
+            comment = commentRepository.findByIdAndUser_username(id, user.getUsername()).orElseThrow(
+                    () -> new CustomException(AUTHOR_NOT_SAME_MOD)
+            );
         }
+        comment.update(commentRequestDto, user);
+        return new CommentResponseDto(comment);
     }
 
     // 댓글 삭제
@@ -76,25 +72,21 @@ public class CommentService {
         // 토큰 체크
         User user = checkJwtToken(request);
 
-        // 댓글 DB 저장 유무 확인
-        Comment comment = commentRepository.findById(id).orElseThrow(
-                () -> new CustomException(COMMENT_NOT_FOUND)
-        );
-
         UserRoleEnum userRoleEnum = user.getRole();
 
+        Comment comment;
         // 권한 확인 후, 관리자가 아니면 작성자인지 확인
         if(userRoleEnum == UserRoleEnum.ADMIN) {
-            commentRepository.delete(comment);
-            return new Message("댓글 삭제 성공", 200);
+            comment = commentRepository.findById(id).orElseThrow(
+                    () -> new CustomException(COMMENT_NOT_FOUND)
+            );
         } else {
-            if(comment.getUser().getUsername() != user.getUsername()) {
-                throw new CustomException(AUTHOR_NOT_SAME_DEL);
-            }
-
-            commentRepository.delete(comment);
-            return new Message("댓글 삭제 성공", 200);
+            comment = commentRepository.findByIdAndUser_username(id, user.getUsername()).orElseThrow(
+                    () -> new CustomException(AUTHOR_NOT_SAME_DEL)
+            );
         }
+        commentRepository.deleteById(id);
+        return new Message("댓글 삭제 성공", 200);
     }
 
 
@@ -117,7 +109,6 @@ public class CommentService {
                     () -> new CustomException(CANNOT_FOUND_USERNAME)
             );
             return user;
-
         }
         return null;
     }

@@ -28,6 +28,7 @@ public class User {
     @Enumerated(value = EnumType.STRING)
     private UserRoleEnum role;
 
+    // 일대다 관계 설정
     @OneToMany
     private List<Comment> commentList = new ArrayList<>();
 

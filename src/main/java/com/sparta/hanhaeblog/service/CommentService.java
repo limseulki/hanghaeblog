@@ -43,10 +43,12 @@ public class CommentService {
         Comment comment;
         // 권한 확인 후, 관리자가 아니면 작성자인지 확인
         if(userRoleEnum == UserRoleEnum.ADMIN) {
+            // 댓글이 DB에 있는지 확인
              comment = commentRepository.findById(id).orElseThrow(
                     () -> new CustomException(COMMENT_NOT_FOUND)
             );
         } else {
+            // 작성자 일치 여부 확인
             comment = commentRepository.findByIdAndUser_username(id, user.getUsername()).orElseThrow(
                     () -> new CustomException(AUTHOR_NOT_SAME_MOD)
             );
@@ -64,10 +66,12 @@ public class CommentService {
         Comment comment;
         // 권한 확인 후, 관리자가 아니면 작성자인지 확인
         if(userRoleEnum == UserRoleEnum.ADMIN) {
+            // 댓글이 DB에 있는지 확인
             comment = commentRepository.findById(id).orElseThrow(
                     () -> new CustomException(COMMENT_NOT_FOUND)
             );
         } else {
+            // 작성자 일치 여부 확인
             comment = commentRepository.findByIdAndUser_username(id, user.getUsername()).orElseThrow(
                     () -> new CustomException(AUTHOR_NOT_SAME_DEL)
             );

@@ -32,8 +32,8 @@ public class UserService {
     @Transactional
     public Message signup(SignupRequestDto signupRequestDto) {
         String username = signupRequestDto.getUsername();
+        // 비밀번호 암호화 해서 저장
         String password = passwordEncoder.encode(signupRequestDto.getPassword());
-
 
         // 회원 중복 확인
         Optional<User> found = userRepository.findByUsername(username);
@@ -49,7 +49,6 @@ public class UserService {
             }
             role = UserRoleEnum.ADMIN;
         }
-
         User user = new User(username, password, role);
         userRepository.save(user);
         return new Message("회원가입 성공", 200);
@@ -65,10 +64,13 @@ public class UserService {
                 () -> new CustomException(CANNOT_FOUND_USER)
         );
 
-        // 비밀번호 확인
+        // 비밀번호 확인. (사용자가 입력한 비밀번호, 저장된 비밀번호)
+        // 사용자가 입력한 비밀번호를 암호화해서 DB에 저장된 비밀번호와 비교하여 인증
         if(!passwordEncoder.matches(password, user.getPassword())){
             throw  new CustomException(CANNOT_FOUND_USER);
         }
+
+        // Header에 토큰 저장
         response.addHeader(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createToken(user.getUsername(), user.getRole()));
         return new Message("로그인 성공", 200);
     }

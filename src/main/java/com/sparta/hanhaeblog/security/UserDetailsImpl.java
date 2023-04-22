@@ -28,6 +28,7 @@ public class UserDetailsImpl implements UserDetails {
         UserRoleEnum role = user.getRole();
         String authority = role.getAuthority();
 
+        // 사용자 권한 GrantedAuthority로 추상화 및 반환
         SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(authority);
         Collection<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(simpleGrantedAuthority);

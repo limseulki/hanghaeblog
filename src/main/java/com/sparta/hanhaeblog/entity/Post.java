@@ -27,6 +27,7 @@ public class Post extends Timestamped {
     @Column(nullable = false)
     private String contents;
 
+    // 일대다 관계 설정
     @OneToMany
     private List<Comment> commentList = new ArrayList<>();
 

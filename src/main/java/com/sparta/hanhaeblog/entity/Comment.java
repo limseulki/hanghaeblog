@@ -21,6 +21,7 @@ public class Comment extends Timestamped {
     @Column(nullable = false)
     private String content;
 
+    // 다대일 관계 설정
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

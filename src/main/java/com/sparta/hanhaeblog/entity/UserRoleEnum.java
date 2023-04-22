@@ -14,6 +14,7 @@ public enum UserRoleEnum {
         return this.authority;
     }
 
+    // 권한(Authority) 규칙. "ROLE_"로 시작
     public static class Authority {
         public static final String USER = "ROLE_USER";
         public static final String ADMIN = "ROLE_ADMIN";

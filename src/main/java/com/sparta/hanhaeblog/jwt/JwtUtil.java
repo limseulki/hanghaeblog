@@ -27,9 +27,13 @@ public class JwtUtil {
 
     private final UserDetailsServiceImpl userDetailsService;
 
+    // Header Key 값
     public static final String AUTHORIZATION_HEADER = "Authorization";
+    // 사용자 권한 값의 키
     public static final String AUTHORIZATION_KEY = "auth";
+    // Token 식별자. 토큰 앞에 붙는다.
     private static final String BEARER_PREFIX = "Bearer ";
+    // 토큰 만료 시간 ms단위
     private static final long TOKEN_TIME = 60 * 60 * 1000L;
 
     @Value("${jwt.secret.key}")
@@ -37,6 +41,7 @@ public class JwtUtil {
     private Key key;
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
+    // 초기화
     @PostConstruct
     public void init() {
         byte[] bytes = Base64.getDecoder().decode(secretKey);
@@ -45,12 +50,9 @@ public class JwtUtil {
 
     // header 토큰을 가져오기
     public String resolveToken(HttpServletRequest request) {
-        System.out.println("AUTHORIZATION_HEADER: "+AUTHORIZATION_HEADER);
-        System.out.println("request: "+request);
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
-        System.out.println("bearerToken: "+bearerToken);
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
-            return bearerToken.substring(7);
+            return bearerToken.substring(7); // bearer과 공백 제거
         }
         return null;
     }
@@ -95,6 +97,7 @@ public class JwtUtil {
     // 인증 객체 생성
     public Authentication createAuthentication(String username) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        // 인증 객체 생성. SecurityContext의 principal(userDetails), credentials(비밀번호), authorities(권한 인증 객체)다.
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 

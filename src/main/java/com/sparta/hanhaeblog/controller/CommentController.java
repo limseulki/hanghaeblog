@@ -2,11 +2,11 @@ package com.sparta.hanhaeblog.controller;
 
 import com.sparta.hanhaeblog.Message.Message;
 import com.sparta.hanhaeblog.dto.*;
+import com.sparta.hanhaeblog.security.UserDetailsImpl;
 import com.sparta.hanhaeblog.service.CommentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequiredArgsConstructor
@@ -16,17 +16,25 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping("")
-    public CommentResponseDto createComment(@RequestBody CommentRequestDto commentRequestDto, HttpServletRequest request) {
-        return commentService.createComment(commentRequestDto, request);
+    public CommentResponseDto createComment(@RequestBody CommentRequestDto commentRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        System.out.println("======================================================");
+        System.out.println("user.getUsername() = " + userDetails.getUsername());
+        System.out.println("user.getUser() = " + userDetails.getUser());
+        System.out.println("user.getUser().getPassword() = " + userDetails.getUser().getPassword());
+        System.out.println("user.getUser().getId() = " + userDetails.getUser().getId());
+        System.out.println("======================================================");
+
+        return commentService.createComment(commentRequestDto, userDetails.getUser());
     }
 
     @PutMapping("/{id}")
-    public CommentResponseDto updateComment(@PathVariable Long id, @RequestBody CommentRequestDto commentRequestDto, HttpServletRequest request) {
-        return commentService.updateComment(id, commentRequestDto, request);
+    public CommentResponseDto updateComment(@PathVariable Long id, @RequestBody CommentRequestDto commentRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return commentService.updateComment(id, commentRequestDto, userDetails.getUser());
     }
 
     @DeleteMapping("/{id}")
-    public Message deleteComment(@PathVariable Long id, HttpServletRequest request) {
-        return commentService.deleteComment(id, request);
+    public Message deleteComment(@PathVariable Long id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return commentService.deleteComment(id, userDetails.getUser());
     }
 }

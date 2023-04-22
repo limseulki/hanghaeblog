@@ -36,9 +36,7 @@ public class PostService {
 
     // Post 작성
     @Transactional
-    public PostResponseDto createPost(PostRequestDto requestDto, HttpServletRequest request) {
-        // 토큰 체크
-        User user = checkJwtToken(request);
+    public PostResponseDto createPost(PostRequestDto requestDto, User user) {
 
         List<CommentResponseDto> commentList = new ArrayList<>();
 
@@ -69,9 +67,7 @@ public class PostService {
 
     // 선택한 Post 수정
     @Transactional
-    public PostResponseDto updatePost(Long id, PostRequestDto requestDto, HttpServletRequest request) {
-        // 토큰 체크
-        User user = checkJwtToken(request);
+    public PostResponseDto updatePost(Long id, PostRequestDto requestDto, User user) {
 
         UserRoleEnum userRoleEnum = user.getRole();
 
@@ -91,9 +87,7 @@ public class PostService {
 
     // 선택한 Post 삭제
     @Transactional
-    public Message deletePost(Long id, HttpServletRequest request) {
-        // 토큰 체크
-        User user = checkJwtToken(request);
+    public Message deletePost(Long id, User user) {
 
         UserRoleEnum userRoleEnum = user.getRole();
 
@@ -113,30 +107,6 @@ public class PostService {
         return new Message("게시글 삭제 성공", 200);
     }
 
-    public User checkJwtToken(HttpServletRequest request) {
-        // Request에서 Token 가져오기
-        String token = jwtUtil.resolveToken(request);
-        Claims claims;
-        
-        // 토큰이 있는 경우에만 게시글 접근 가능
-        if (token != null) {
-            if (jwtUtil.validateToken(token)) {
-                // 토큰에서 사용자 정보 가져오기
-                claims = jwtUtil.getUserInfoFromToken(token);
-            } else {
-                throw new IllegalArgumentException("Token Error");
-            }
-
-            // 토큰에서 가져온 사용자 정보를 사용하여 DB 조회
-            User user = userRepository.findByUsername(claims.getSubject()).orElseThrow(
-                    () -> new CustomException(CANNOT_FOUND_USER)
-            );
-            return user;
-
-        }
-        return null;
-    }
-
     private List<CommentResponseDto> getCommentList(Long postId) {
         List<Comment> commentList = commentRepository.findAllByPostIdOrderByCreatedAtDesc(postId);
         List<CommentResponseDto> commentResponseDtoList = new ArrayList<>();
@@ -145,5 +115,4 @@ public class PostService {
         }
         return commentResponseDtoList;
     }
-
 }

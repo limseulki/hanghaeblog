@@ -22,7 +22,7 @@ public class Comment extends Timestamped {
     private String content;
 
     @ManyToOne
-//    @JoinColumn(name = "USER_ID", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
     public Comment(CommentRequestDto commentRequestDto, User user) {
@@ -32,7 +32,6 @@ public class Comment extends Timestamped {
     }
 
     public void update(CommentRequestDto commentRequestDto, User user) {
-        this.postId = commentRequestDto.getPostId();
         this.content = commentRequestDto.getContent();
         this.user = user;
     }

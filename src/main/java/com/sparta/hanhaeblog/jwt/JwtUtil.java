@@ -64,7 +64,6 @@ public class JwtUtil {
                         .setSubject(username)
                         .claim(AUTHORIZATION_KEY, role)
                         .setExpiration(new Date(date.getTime() + TOKEN_TIME))
-//                        .setExpiration(new Date(System.currentTimeMillis() + TOKEN_TIME))
                         .setIssuedAt(date)
                         .signWith(key, signatureAlgorithm)
                         .compact();

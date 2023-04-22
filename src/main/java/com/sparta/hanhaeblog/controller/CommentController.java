@@ -17,14 +17,6 @@ public class CommentController {
 
     @PostMapping("")
     public CommentResponseDto createComment(@RequestBody CommentRequestDto commentRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-
-        System.out.println("======================================================");
-        System.out.println("user.getUsername() = " + userDetails.getUsername());
-        System.out.println("user.getUser() = " + userDetails.getUser());
-        System.out.println("user.getUser().getPassword() = " + userDetails.getUser().getPassword());
-        System.out.println("user.getUser().getId() = " + userDetails.getUser().getId());
-        System.out.println("======================================================");
-
         return commentService.createComment(commentRequestDto, userDetails.getUser());
     }
 

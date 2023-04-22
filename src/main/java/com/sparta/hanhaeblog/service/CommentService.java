@@ -7,10 +7,8 @@ import com.sparta.hanhaeblog.dto.CommentResponseDto;
 import com.sparta.hanhaeblog.entity.Comment;
 import com.sparta.hanhaeblog.entity.User;
 import com.sparta.hanhaeblog.entity.UserRoleEnum;
-import com.sparta.hanhaeblog.jwt.JwtUtil;
 import com.sparta.hanhaeblog.repository.CommentRepository;
 import com.sparta.hanhaeblog.repository.PostRepository;
-import com.sparta.hanhaeblog.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,9 +20,7 @@ import static com.sparta.hanhaeblog.Exception.ErrorCode.*;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-    private final UserRepository userRepository;
     private final PostRepository postRepository;
-    private final JwtUtil jwtUtil;
 
     // 댓글 작성
     @Transactional

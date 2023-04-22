@@ -5,7 +5,6 @@ import com.sparta.hanhaeblog.dto.SignupRequestDto;
 import com.sparta.hanhaeblog.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;

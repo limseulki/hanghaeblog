@@ -14,6 +14,7 @@ public class PostResponseDto {
     private String title;
     private String contents;
     private String username;
+    private int postLike;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
     private List<CommentResponseDto> commentList;
@@ -23,6 +24,7 @@ public class PostResponseDto {
         this.title = post.getTitle();
         this.contents = post.getContents();
         this.username = post.getUsername();
+        this.postLike = post.getPostLike();
         this.createdAt = post.getCreatedAt();
         this.modifiedAt = post.getModifiedAt();
         this.commentList = commentList;

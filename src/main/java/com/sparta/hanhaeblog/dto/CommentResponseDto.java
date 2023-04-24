@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 public class CommentResponseDto {
     private Long id;
     private String contents;
+    private int commentLike;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
     private String username;
@@ -18,6 +19,7 @@ public class CommentResponseDto {
     public CommentResponseDto(Comment comment) {
         this.id = comment.getId();
         this.contents = comment.getContent();
+        this.commentLike = comment.getCommentLike();
         this.createdAt = comment.getCreatedAt();
         this.modifiedAt = comment.getModifiedAt();
         this.username = comment.getUser().getUsername();

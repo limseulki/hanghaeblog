@@ -8,6 +8,7 @@ import com.sparta.hanhaeblog.entity.Comment;
 import com.sparta.hanhaeblog.entity.User;
 import com.sparta.hanhaeblog.entity.UserRoleEnum;
 import com.sparta.hanhaeblog.repository.CommentRepository;
+import com.sparta.hanhaeblog.repository.LikeRepository;
 import com.sparta.hanhaeblog.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
+    private final LikeRepository likeRepository;
 
     // 댓글 작성
     @Transactional
@@ -76,6 +78,9 @@ public class CommentService {
                     () -> new CustomException(AUTHOR_NOT_SAME_DEL)
             );
         }
+        // 댓글 좋아요 삭제
+        likeRepository.deleteAllByCommentId(id);
+        // 댓글 삭제
         commentRepository.deleteById(id);
         return new Message("댓글 삭제 성공", 200);
     }

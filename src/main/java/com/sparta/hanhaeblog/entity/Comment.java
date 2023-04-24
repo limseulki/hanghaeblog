@@ -21,6 +21,9 @@ public class Comment extends Timestamped {
     @Column(nullable = false)
     private String content;
 
+    @Column(nullable = false)
+    private int commentLike;
+
     // 다대일 관계 설정
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -30,10 +33,19 @@ public class Comment extends Timestamped {
         this.postId = commentRequestDto.getPostId();
         this.content = commentRequestDto.getContent();
         this.user= user;
+        this.commentLike = 0;
     }
 
     public void update(CommentRequestDto commentRequestDto, User user) {
         this.content = commentRequestDto.getContent();
         this.user = user;
+    }
+
+    public void like() {
+        this.commentLike += 1;
+    }
+
+    public void unlike() {
+        this.commentLike -= 1;
     }
 }

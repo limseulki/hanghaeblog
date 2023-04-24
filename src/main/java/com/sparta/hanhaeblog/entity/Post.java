@@ -27,6 +27,9 @@ public class Post extends Timestamped {
     @Column(nullable = false)
     private String contents;
 
+    @Column(nullable = false)
+    private int postLike;
+
     // 일대다 관계 설정
     @OneToMany
     private List<Comment> commentList = new ArrayList<>();
@@ -35,10 +38,19 @@ public class Post extends Timestamped {
         this.title = requestDto.getTitle();
         this.username = username;
         this.contents = requestDto.getContents();
+        this.postLike = 0;
     }
 
     public void update(PostRequestDto requestDto) {
         this.title = requestDto.getTitle();
         this.contents = requestDto.getContents();
+    }
+
+    public void like() {
+        this.postLike += 1;
+    }
+
+    public void unlike() {
+        this.postLike -= 1;
     }
 }

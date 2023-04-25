@@ -7,6 +7,7 @@ import com.sparta.hanhaeblog.dto.PostRequestDto;
 import com.sparta.hanhaeblog.dto.PostResponseDto;
 import com.sparta.hanhaeblog.entity.*;
 import com.sparta.hanhaeblog.repository.CommentRepository;
+import com.sparta.hanhaeblog.repository.LikeRepository;
 import com.sparta.hanhaeblog.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.sparta.hanhaeblog.Exception.ErrorCode.*;
 
@@ -23,7 +25,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
-
+    private final LikeRepository likeRepository;
 
     // Post 작성
     @Transactional
@@ -33,7 +35,6 @@ public class PostService {
 
         Post post = postRepository.saveAndFlush(new Post(requestDto, user.getUsername()));
         return new PostResponseDto(post, commentList);
-
     }
 
     // 전체 게시글 조회
@@ -86,11 +87,10 @@ public class PostService {
 
         UserRoleEnum userRoleEnum = user.getRole();
 
-        Post post;
         // 관리자 여부 확인
         if(userRoleEnum == UserRoleEnum.ADMIN) {
             // 게시글이 DB에 있는지 확인
-            post = postRepository.findById(id).orElseThrow(
+            Post post = postRepository.findById(id).orElseThrow(
                     () -> new CustomException(POST_NOT_FOUND)
             );
         } else {

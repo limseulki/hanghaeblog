@@ -27,6 +27,7 @@ public class GlobalExceptionHandler {
         StringBuilder sb = new StringBuilder();
         for ( FieldError fieldError : bindingResult.getFieldErrors()) {
             sb.append(fieldError.getDefaultMessage());
+            sb.append(", ");
         }
         return ErrorResponse.toResponseEntityValid(sb.toString(), HttpStatus.BAD_REQUEST);
     }

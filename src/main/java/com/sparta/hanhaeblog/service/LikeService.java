@@ -51,7 +51,7 @@ public class LikeService {
         }
     }
 
-    // Post 좋아요
+    // Comment 좋아요
     @Transactional
     public Message commentLike(Long commentId, User user) {
 

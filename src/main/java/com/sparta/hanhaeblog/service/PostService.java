@@ -26,13 +26,13 @@ public class PostService {
     private final CommentRepository commentRepository;
     private final LikeRepository likeRepository;
 
-    // Post 작성
+    Post post;
+
+    // 게시글 작성
     @Transactional
     public PostResponseDto createPost(PostRequestDto requestDto, User user) {
-
         List<CommentResponseDto> commentList = new ArrayList<>();
-
-        Post post = postRepository.saveAndFlush(new Post(requestDto, user.getUsername()));
+        post = postRepository.saveAndFlush(new Post(requestDto, user.getUsername()));
         return new PostResponseDto(post, commentList);
     }
 
@@ -51,31 +51,14 @@ public class PostService {
     // 선택한 게시글 조회
     @Transactional(readOnly = true)
     public PostResponseDto getPost(Long id) {
-        Post post = postRepository.findById(id).orElseThrow(
-                () -> new CustomException(POST_NOT_FOUND)
-        );
+        post = existPost(id);
         return new PostResponseDto(post, getCommentList(id));
     }
 
     // 선택한 게시글 수정
     @Transactional
     public PostResponseDto updatePost(Long id, PostRequestDto requestDto, User user) {
-
-        UserRoleEnum userRoleEnum = user.getRole();
-
-        Post post;
-        // 관리자 여부 확인
-        if(userRoleEnum == UserRoleEnum.ADMIN) {
-            // 게시글이 DB에 있는지 확인
-            post = postRepository.findById(id).orElseThrow(
-                    () -> new CustomException(POST_NOT_FOUND)
-            );
-        } else {
-            // 작성자 일치 여부 확인
-            post = postRepository.findByIdAndUsername(id, user.getUsername()).orElseThrow(
-                    () -> new CustomException(AUTHOR_NOT_SAME_MOD)
-            );
-        }
+        post = checkRole(id, user);
         post.update(requestDto);
         return new PostResponseDto(post, getCommentList(id));
     }
@@ -83,22 +66,7 @@ public class PostService {
     // 선택한 게시글 삭제
     @Transactional
     public Message deletePost(Long id, User user) {
-
-        UserRoleEnum userRoleEnum = user.getRole();
-
-        // 관리자 여부 확인
-        if(userRoleEnum == UserRoleEnum.ADMIN) {
-            // 게시글이 DB에 있는지 확인
-            Post post = postRepository.findById(id).orElseThrow(
-                    () -> new CustomException(POST_NOT_FOUND)
-            );
-        } else {
-            // 작성자 일치 여부 확인
-            postRepository.findByIdAndUsername(id, user.getUsername()).orElseThrow(
-                    () -> new CustomException(AUTHOR_NOT_SAME_DEL)
-            );
-        }
-
+        post = checkRole(id, user);
         // 게시글에 달린 댓글의 좋아요 삭제
         // 1. 게시글에 달린 댓글 Id(commentId) 찾기
         List<Comment> commentList= commentRepository.findAllByPostIdOrderByCreatedAtDesc(id);
@@ -110,13 +78,10 @@ public class PostService {
         for (Long commentId : commentIdList) {
             likeRepository.deleteAllByCommentId(commentId);
         }
-
         // 게시글 좋아요 삭제
         likeRepository.deleteAllByPostId(id);
-
         // 게시글에 달린 댓글 전체 삭제
         commentRepository.deleteAllByPostId(id);
-
         // 그 후 게시글 삭제
         postRepository.deleteById(id);
         return new Message("게시글 삭제 성공", 200);
@@ -132,4 +97,32 @@ public class PostService {
         }
         return commentResponseDtoList;
     }
+
+    // 게시글 DB 유무 확인
+    private Post existPost(Long id) {
+        post = postRepository.findById(id).orElseThrow(
+                () -> new CustomException(POST_NOT_FOUND)
+        );
+        return post;
+    }
+
+    // 작성자 일치 여부 확인
+    private Post matchAuthor(Long id, User user) {
+        post = postRepository.findByIdAndUsername(id, user.getUsername()).orElseThrow(
+                () -> new CustomException(AUTHOR_NOT_SAME_MOD)
+        );
+        return post;
+    }
+
+    // 관리자 여부 확인
+    private Post checkRole(Long id, User user) {
+        UserRoleEnum userRoleEnum = user.getRole();
+        if(userRoleEnum == UserRoleEnum.ADMIN) {
+            post = existPost(id);
+        } else {
+            post = matchAuthor(id, user);
+        }
+        return post;
+    }
+
 }

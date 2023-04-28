@@ -24,37 +24,20 @@ public class CommentService {
     private final PostRepository postRepository;
     private final LikeRepository likeRepository;
 
+    Comment comment;
+
     // 댓글 작성
     @Transactional
     public CommentResponseDto createComment(CommentRequestDto commentRequestDto, User user) {
-
-        // 게시글 DB 저장 유무 확인
-        postRepository.findById(commentRequestDto.getPostId()).orElseThrow(
-                () -> new CustomException(POST_NOT_FOUND)
-        );
-        Comment comment = commentRepository.saveAndFlush(new Comment(commentRequestDto, user));
+        existPost(commentRequestDto);
+        comment = commentRepository.saveAndFlush(new Comment(commentRequestDto, user));
         return new CommentResponseDto(comment);
     }
 
     // 댓글 수정
     @Transactional
     public CommentResponseDto updateComment(Long id, CommentRequestDto commentRequestDto, User user) {
-
-        UserRoleEnum userRoleEnum = user.getRole();
-
-        Comment comment;
-        // 권한 확인 후, 관리자가 아니면 작성자인지 확인
-        if(userRoleEnum == UserRoleEnum.ADMIN) {
-            // 댓글이 DB에 있는지 확인
-             comment = commentRepository.findById(id).orElseThrow(
-                    () -> new CustomException(COMMENT_NOT_FOUND)
-            );
-        } else {
-            // 작성자 일치 여부 확인
-            comment = commentRepository.findByIdAndUser_username(id, user.getUsername()).orElseThrow(
-                    () -> new CustomException(AUTHOR_NOT_SAME_MOD)
-            );
-        }
+        comment = checkRole(id, user);
         comment.update(commentRequestDto, user);
         return new CommentResponseDto(comment);
     }
@@ -62,26 +45,45 @@ public class CommentService {
     // 댓글 삭제
     @Transactional
     public Message deleteComment(Long id, User user) {
-
-        UserRoleEnum userRoleEnum = user.getRole();
-
-        Comment comment;
-        // 권한 확인 후, 관리자가 아니면 작성자인지 확인
-        if(userRoleEnum == UserRoleEnum.ADMIN) {
-            // 댓글이 DB에 있는지 확인
-            comment = commentRepository.findById(id).orElseThrow(
-                    () -> new CustomException(COMMENT_NOT_FOUND)
-            );
-        } else {
-            // 작성자 일치 여부 확인
-            comment = commentRepository.findByIdAndUser_username(id, user.getUsername()).orElseThrow(
-                    () -> new CustomException(AUTHOR_NOT_SAME_DEL)
-            );
-        }
+        comment = checkRole(id, user);
         // 댓글 좋아요 삭제
         likeRepository.deleteAllByCommentId(id);
         // 댓글 삭제
         commentRepository.deleteById(id);
         return new Message("댓글 삭제 성공", 200);
+    }
+
+    // 작성자 일치 여부 확인
+    private Comment matchAuthor(Long id, User user) {
+        comment = commentRepository.findByIdAndUser_username(id, user.getUsername()).orElseThrow(
+                () -> new CustomException(AUTHOR_NOT_SAME_DEL)
+        );
+        return comment;
+    }
+
+    // 댓글이 DB 유무 확인
+    private Comment existComment(Long id) {
+        comment = commentRepository.findById(id).orElseThrow(
+                () -> new CustomException(COMMENT_NOT_FOUND)
+        );
+        return comment;
+    }
+
+    // 게시글 DB 저장 유무 확인
+    private void existPost(CommentRequestDto commentRequestDto) {
+        postRepository.findById(commentRequestDto.getPostId()).orElseThrow(
+                () -> new CustomException(POST_NOT_FOUND)
+        );
+    }
+
+    // 관리자 여부 확인
+    private Comment checkRole(Long id, User user) {
+        UserRoleEnum userRoleEnum = user.getRole();
+        if(userRoleEnum == UserRoleEnum.ADMIN) {
+            comment = existComment(id);
+        } else {
+            comment = matchAuthor(id, user);
+        }
+        return comment;
     }
 }

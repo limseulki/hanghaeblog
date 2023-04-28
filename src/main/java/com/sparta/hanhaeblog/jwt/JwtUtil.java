@@ -39,8 +39,8 @@ public class JwtUtil {
     public static final String ACCESS_KEY = "ACCESS_KEY";
     public static final String REFRESH_KEY = "REFRESH_KEY";
     // 토큰 만료 시간 ms단위
-    private static final long ACCESS_TIME = 60 * 1000L;
-    private static final long REFRESH_TIME = 60 * 60 * 1000L;
+    private static final long ACCESS_TIME = 60 * 60 * 1000L;
+    private static final long REFRESH_TIME = 24 * 60 * 60 * 1000L;
     private final RefreshTokenRepository refreshTokenRepository;
 
     @Value("${jwt.secret.key}")

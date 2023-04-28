@@ -25,7 +25,7 @@ public class Comment extends Timestamped {
     private int commentLike;
 
     // 다대일 관계 설정
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 

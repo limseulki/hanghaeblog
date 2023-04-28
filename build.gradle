@@ -38,6 +38,10 @@ dependencies {
 
 	// 스프링 시큐리티
 	implementation 'org.springframework.boot:spring-boot-starter-security'
+
+	// Swagger 의존성 추가
+	implementation group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
+	implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
 }
 
 tasks.named('test') {

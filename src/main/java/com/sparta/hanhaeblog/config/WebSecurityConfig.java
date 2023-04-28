@@ -52,6 +52,7 @@ public class WebSecurityConfig {
                 .antMatchers("/api/auth/**").permitAll()
                 // 로그인 안 한 사용자도 전체 게시글 목록 조회 가능하도록 허용
                 .antMatchers("/api/posts").permitAll()
+                .antMatchers("/swagger-resources/**", "/swagger-ui.html", "/v2/api-docs", "/webjars/**").permitAll()
                 // 그 외의 어떤 요청이든 인증처리 하겠다는 의미
                 .anyRequest().authenticated();
 

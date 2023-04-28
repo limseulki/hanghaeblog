@@ -2,13 +2,15 @@ package com.sparta.hanhaeblog.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.hanhaeblog.dto.SecurityExceptionDto;
-import io.jsonwebtoken.Claims;
+import com.sparta.hanhaeblog.entity.User;
+import com.sparta.hanhaeblog.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -18,23 +20,36 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Slf4j
+@Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        String token = jwtUtil.resolveToken(request);   // 토큰 가져오기
+        String access_token = jwtUtil.resolveToken(request, jwtUtil.ACCESS_KEY);
+        String refresh_token = jwtUtil.resolveToken(request, jwtUtil.REFRESH_KEY);
 
-        if(token != null) {
-            if(!jwtUtil.validateToken(token)){      // 토큰 검증
-                jwtExceptionHandler(response, "Token Error", HttpStatus.UNAUTHORIZED.value());
+
+        if(access_token != null) {
+            if(jwtUtil.validateToken(access_token)) {      // 토큰 검증
+                setAuthentication(jwtUtil.getUserInfoFromToken(access_token));
+            } else if(refresh_token != null && jwtUtil.refreshTokenValidation(refresh_token)) {
+                String username = jwtUtil.getUserInfoFromToken(refresh_token);
+                User user = userRepository.findByUsername(username).get();
+                String newAccessToken = jwtUtil.createToken(username, user.getRole(), "Access");
+                jwtUtil.setHeaderAccessToken(response, newAccessToken);
+                setAuthentication(username);
+            } else if(refresh_token == null) {
+                jwtExceptionHandler(response, "AccessToken Expired", HttpStatus.UNAUTHORIZED.value());
+                return;
+            } else {
+                jwtExceptionHandler(response, "RefreshToken Expired", HttpStatus.UNAUTHORIZED.value());
                 return;
             }
-            Claims info = jwtUtil.getUserInfoFromToken(token);  // 토큰에서 사용자 정보 가져오기
-            setAuthentication(info.getSubject());
         }
         filterChain.doFilter(request, response);    // 다음 filter로 넘어가기
     }

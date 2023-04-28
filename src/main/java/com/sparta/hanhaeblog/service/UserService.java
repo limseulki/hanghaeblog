@@ -4,9 +4,12 @@ import com.sparta.hanhaeblog.Exception.CustomException;
 import com.sparta.hanhaeblog.Message.Message;
 import com.sparta.hanhaeblog.dto.LoginRequestDto;
 import com.sparta.hanhaeblog.dto.SignupRequestDto;
+import com.sparta.hanhaeblog.dto.TokenDto;
+import com.sparta.hanhaeblog.entity.RefreshToken;
 import com.sparta.hanhaeblog.entity.User;
 import com.sparta.hanhaeblog.entity.UserRoleEnum;
 import com.sparta.hanhaeblog.jwt.JwtUtil;
+import com.sparta.hanhaeblog.repository.RefreshTokenRepository;
 import com.sparta.hanhaeblog.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,6 +28,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     // ADMIN_TOKEN
     private static final String ADMIN_TOKEN = "AAABnvxRVklrnYxKZ0aHgTBcXukeZygoC";
@@ -54,7 +58,7 @@ public class UserService {
         return new Message("회원가입 성공", 200);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public Message login(LoginRequestDto loginRequestDto, HttpServletResponse response) {
         String username = loginRequestDto.getUsername();
         String password = loginRequestDto.getPassword();
@@ -70,8 +74,22 @@ public class UserService {
             throw  new CustomException(CANNOT_FOUND_USER);
         }
 
+        TokenDto tokenDto = jwtUtil.createAllToken(username, user.getRole());
+
+        Optional<RefreshToken> refreshToken = refreshTokenRepository.findByUsername(username);
+
+        if(refreshToken.isPresent()) {
+            RefreshToken updateToken = refreshToken.get().updateToken(tokenDto.getRefreshToken().substring(7));
+            refreshTokenRepository.save(updateToken);
+        } else {
+            RefreshToken newToken = new RefreshToken(tokenDto.getRefreshToken().substring(7), loginRequestDto.getUsername());
+            refreshTokenRepository.save(newToken);
+        }
+
+        response.addHeader(jwtUtil.ACCESS_KEY, tokenDto.getAccessToken());
+        response.addHeader(jwtUtil.REFRESH_KEY, tokenDto.getRefreshToken());
+
         // Header에 토큰 저장
-        response.addHeader(JwtUtil.AUTHORIZATION_HEADER, jwtUtil.createToken(user.getUsername(), user.getRole()));
         return new Message("로그인 성공", 200);
     }
 }

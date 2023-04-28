@@ -1,7 +1,6 @@
 package com.sparta.hanhaeblog.config;
 
 import com.sparta.hanhaeblog.jwt.JwtAuthFilter;
-import com.sparta.hanhaeblog.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableGlobalMethodSecurity(securedEnabled = true) // @Secured 어노테이션 활성화
 public class WebSecurityConfig {
 
-    private final JwtUtil jwtUtil;
+    private final JwtAuthFilter jwtAuthFilter;
 
     // 비밀번호 암호화(encoding)
     @Bean
@@ -57,7 +56,7 @@ public class WebSecurityConfig {
                 .anyRequest().authenticated();
 
         // JWT 인증/인가를 사용하기 위한 설정
-        http.addFilterBefore(new JwtAuthFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

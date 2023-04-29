@@ -93,5 +93,16 @@ public class UserService {
         return new Message("로그인 성공", 200);
     }
 
+    @Transactional
+    public Message quit(LoginRequestDto loginRequestDto, User user) {
+        String password = loginRequestDto.getPassword();
+
+        if(!passwordEncoder.matches(password, user.getPassword())){
+            throw  new CustomException(CANNOT_FOUND_USER);
+        }
+
+        userRepository.deleteById(user.getId());
+        return new Message("탈퇴 성공", 200);
+    }
 
 }

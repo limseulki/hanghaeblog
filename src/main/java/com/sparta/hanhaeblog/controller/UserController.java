@@ -2,10 +2,12 @@ package com.sparta.hanhaeblog.controller;
 import com.sparta.hanhaeblog.Message.Message;
 import com.sparta.hanhaeblog.dto.LoginRequestDto;
 import com.sparta.hanhaeblog.dto.SignupRequestDto;
+import com.sparta.hanhaeblog.security.UserDetailsImpl;
 import com.sparta.hanhaeblog.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -29,5 +31,10 @@ public class UserController {
         return userService.login(loginRequestDto, response);
     }
 
+    // 탈퇴
+    @DeleteMapping("/delete")
+    public Message delete(LoginRequestDto loginRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return userService.quit(loginRequestDto, userDetails.getUser());
+    }
 
 }

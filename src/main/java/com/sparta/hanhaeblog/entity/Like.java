@@ -16,15 +16,17 @@ public class Like {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(nullable = true)
-    private Long postId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id")
+    private Post post;
 
-    @Column(nullable = true)
-    private Long commentId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comment_id")
+    private Comment comment;
 
-    public Like(User user, Long postId, Long commentId) {
+    public Like(User user, Post post, Comment comment) {
         this.user = user;
-        this.postId = postId;
-        this.commentId = commentId;
+        this.post = post;
+        this.comment = comment;
     }
 }

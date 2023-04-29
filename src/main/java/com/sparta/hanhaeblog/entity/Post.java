@@ -1,5 +1,6 @@
 package com.sparta.hanhaeblog.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.sparta.hanhaeblog.dto.PostRequestDto;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -36,8 +37,13 @@ public class Post extends Timestamped {
     private User user;
 
     // 일대다 관계 설정
-    @OneToMany
+    @JsonBackReference
+    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
     private List<Comment> commentList = new ArrayList<>();
+
+    @JsonBackReference
+    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
+    private List<Like> likeList = new ArrayList<>();
 
     public Post(PostRequestDto requestDto, String username, User user) {
         this.title = requestDto.getTitle();

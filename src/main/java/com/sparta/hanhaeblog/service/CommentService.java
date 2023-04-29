@@ -5,6 +5,7 @@ import com.sparta.hanhaeblog.Message.Message;
 import com.sparta.hanhaeblog.dto.CommentRequestDto;
 import com.sparta.hanhaeblog.dto.CommentResponseDto;
 import com.sparta.hanhaeblog.entity.Comment;
+import com.sparta.hanhaeblog.entity.Post;
 import com.sparta.hanhaeblog.entity.User;
 import com.sparta.hanhaeblog.entity.UserRoleEnum;
 import com.sparta.hanhaeblog.repository.CommentRepository;
@@ -25,12 +26,13 @@ public class CommentService {
     private final LikeRepository likeRepository;
 
     Comment comment;
+    Post post;
 
     // 댓글 작성
     @Transactional
     public CommentResponseDto createComment(CommentRequestDto commentRequestDto, User user) {
-        existPost(commentRequestDto);
-        comment = commentRepository.saveAndFlush(new Comment(commentRequestDto, user));
+        post = existPost(commentRequestDto);
+        comment = commentRepository.saveAndFlush(new Comment(commentRequestDto, user, post));
         return new CommentResponseDto(comment);
     }
 
@@ -46,9 +48,6 @@ public class CommentService {
     @Transactional
     public Message deleteComment(Long id, User user) {
         comment = checkRole(id, user);
-        // 댓글 좋아요 삭제
-        likeRepository.deleteAllByCommentId(id);
-        // 댓글 삭제
         commentRepository.deleteById(id);
         return new Message("댓글 삭제 성공", 200);
     }
@@ -70,10 +69,11 @@ public class CommentService {
     }
 
     // 게시글 DB 저장 유무 확인
-    private void existPost(CommentRequestDto commentRequestDto) {
-        postRepository.findById(commentRequestDto.getPostId()).orElseThrow(
+    private Post existPost(CommentRequestDto commentRequestDto) {
+        post = postRepository.findById(commentRequestDto.getPostId()).orElseThrow(
                 () -> new CustomException(POST_NOT_FOUND)
         );
+        return post;
     }
 
     // 관리자 여부 확인

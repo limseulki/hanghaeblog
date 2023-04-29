@@ -38,7 +38,7 @@ public class LikeService {
 
         // 좋아요 없으면 DB에 추가
         if (like == null) {
-            likeRepository.save(new Like(user, postId, null));
+            likeRepository.save(new Like(user, post, null));
             post.like();
             return new Message("게시글 좋아요 성공", 200);
         } else { // 좋아요 있으면 DB에서 제거
@@ -62,7 +62,7 @@ public class LikeService {
 
         // 좋아요 없으면 DB에 추가
         if (like == null) {
-            likeRepository.save(new Like(user, null, commentId));
+            likeRepository.save(new Like(user, null, comment));
             comment.like();
             return new Message("댓글 좋아요 성공", 200);
         } else { // 좋아요 있으면 DB에서 제거

@@ -67,22 +67,6 @@ public class PostService {
     @Transactional
     public Message deletePost(Long id, User user) {
         post = checkRole(id, user);
-        // 게시글에 달린 댓글의 좋아요 삭제
-        // 1. 게시글에 달린 댓글 Id(commentId) 찾기
-        List<Comment> commentList= commentRepository.findAllByPostIdOrderByCreatedAtDesc(id);
-        List<Long> commentIdList = new ArrayList<>();
-        for (Comment comment : commentList) {
-            commentIdList.add(comment.getId());
-        }
-        // 2. like 에서 삭제
-        for (Long commentId : commentIdList) {
-            likeRepository.deleteAllByCommentId(commentId);
-        }
-        // 게시글 좋아요 삭제
-        likeRepository.deleteAllByPostId(id);
-        // 게시글에 달린 댓글 전체 삭제
-        commentRepository.deleteAllByPostId(id);
-        // 그 후 게시글 삭제
         postRepository.deleteById(id);
         return new Message("게시글 삭제 성공", 200);
     }

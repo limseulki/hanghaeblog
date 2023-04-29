@@ -5,6 +5,7 @@ import com.sparta.hanhaeblog.dto.PostRequestDto;
 import com.sparta.hanhaeblog.dto.PostResponseDto;
 import com.sparta.hanhaeblog.security.UserDetailsImpl;
 import com.sparta.hanhaeblog.service.PostService;
+import com.sparta.hanhaeblog.service.SearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,7 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final SearchService searchService;
 
     // 전체 게시글 조회
     @GetMapping("/posts")
@@ -49,5 +51,11 @@ public class PostController {
     @DeleteMapping("/post/{id}")
     public Message deletePost(@PathVariable Long id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return postService.deletePost(id, userDetails.getUser());
+    }
+
+    // 게시글 검색
+    @GetMapping("/post/search")
+    public List<PostResponseDto> searchPost(@RequestParam String keyword) {
+        return searchService.searchPost(keyword);
     }
 }

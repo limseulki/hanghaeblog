@@ -2,11 +2,15 @@ package com.sparta.hanhaeblog.controller;
 
 import com.sparta.hanhaeblog.Message.Message;
 import com.sparta.hanhaeblog.dto.*;
+import com.sparta.hanhaeblog.entity.Comment;
 import com.sparta.hanhaeblog.security.UserDetailsImpl;
 import com.sparta.hanhaeblog.service.CommentService;
+import com.sparta.hanhaeblog.service.SearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -14,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class CommentController {
 
     private final CommentService commentService;
+    private final SearchService searchService;
 
     // 댓글 작성
     @PostMapping("")
@@ -31,5 +36,11 @@ public class CommentController {
     @DeleteMapping("/{id}")
     public Message deleteComment(@PathVariable Long id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return commentService.deleteComment(id, userDetails.getUser());
+    }
+
+    // 댓글 검색
+    @GetMapping("/search")
+    public List<CommentResponseDto> searchPost(@RequestParam String keyword) {
+        return searchService.searchComment(keyword);
     }
 }

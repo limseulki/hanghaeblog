@@ -32,7 +32,7 @@ public class PostService {
     @Transactional
     public PostResponseDto createPost(PostRequestDto requestDto, User user) {
         List<CommentResponseDto> commentList = new ArrayList<>();
-        post = postRepository.saveAndFlush(new Post(requestDto, user.getUsername()));
+        post = postRepository.saveAndFlush(new Post(requestDto, user.getUsername(), user));
         return new PostResponseDto(post, commentList);
     }
 

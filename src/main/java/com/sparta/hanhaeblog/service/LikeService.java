@@ -2,7 +2,6 @@ package com.sparta.hanhaeblog.service;
 
 import com.sparta.hanhaeblog.Exception.CustomException;
 import com.sparta.hanhaeblog.Message.Message;
-import com.sparta.hanhaeblog.dto.PostResponseDto;
 import com.sparta.hanhaeblog.entity.Comment;
 import com.sparta.hanhaeblog.entity.Like;
 import com.sparta.hanhaeblog.entity.Post;
@@ -10,9 +9,7 @@ import com.sparta.hanhaeblog.entity.User;
 import com.sparta.hanhaeblog.repository.CommentRepository;
 import com.sparta.hanhaeblog.repository.LikeRepository;
 import com.sparta.hanhaeblog.repository.PostRepository;
-import com.sparta.hanhaeblog.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

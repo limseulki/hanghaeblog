@@ -1,10 +1,9 @@
 package com.sparta.hanhaeblog.entity;
 
 import com.sparta.hanhaeblog.dto.CommentRequestDto;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import javax.persistence.*;
 
 @Getter
 @Entity

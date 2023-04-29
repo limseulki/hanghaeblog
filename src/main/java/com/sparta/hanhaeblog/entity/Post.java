@@ -1,11 +1,11 @@
 package com.sparta.hanhaeblog.entity;
 
 import com.sparta.hanhaeblog.dto.PostRequestDto;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,15 +30,21 @@ public class Post extends Timestamped {
     @Column(nullable = false)
     private int postLike;
 
+    // 다대일 관계 설정
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     // 일대다 관계 설정
     @OneToMany
     private List<Comment> commentList = new ArrayList<>();
 
-    public Post(PostRequestDto requestDto, String username) {
+    public Post(PostRequestDto requestDto, String username, User user) {
         this.title = requestDto.getTitle();
         this.username = username;
         this.contents = requestDto.getContents();
         this.postLike = 0;
+        this.user = user;
     }
 
     public void update(PostRequestDto requestDto) {

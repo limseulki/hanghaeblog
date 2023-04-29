@@ -11,12 +11,12 @@ import com.sparta.hanhaeblog.entity.UserRoleEnum;
 import com.sparta.hanhaeblog.jwt.JwtUtil;
 import com.sparta.hanhaeblog.repository.RefreshTokenRepository;
 import com.sparta.hanhaeblog.repository.UserRepository;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 
 import static com.sparta.hanhaeblog.Exception.ErrorCode.*;
@@ -92,4 +92,6 @@ public class UserService {
         // Header에 토큰 저장
         return new Message("로그인 성공", 200);
     }
+
+
 }

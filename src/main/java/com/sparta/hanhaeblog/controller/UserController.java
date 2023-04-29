@@ -3,11 +3,10 @@ import com.sparta.hanhaeblog.Message.Message;
 import com.sparta.hanhaeblog.dto.LoginRequestDto;
 import com.sparta.hanhaeblog.dto.SignupRequestDto;
 import com.sparta.hanhaeblog.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
 
 @RestController
 @RequiredArgsConstructor

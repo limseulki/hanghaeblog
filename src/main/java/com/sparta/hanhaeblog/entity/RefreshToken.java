@@ -20,9 +20,13 @@ public class RefreshToken {
     @NotNull
     private String username;
 
-    public RefreshToken(String refreshToken, String username) {
+    @OneToOne
+    private User user;
+
+    public RefreshToken(String refreshToken, String username, User user) {
         this.refreshToken = refreshToken;
         this.username = username;
+        this.user = user;
     }
 
     public RefreshToken updateToken(String refreshToken) {

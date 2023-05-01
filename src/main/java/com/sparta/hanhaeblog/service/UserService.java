@@ -81,9 +81,11 @@ public class UserService {
         if(refreshToken.isPresent()) {
             RefreshToken updateToken = refreshToken.get().updateToken(tokenDto.getRefreshToken().substring(7));
             refreshTokenRepository.save(updateToken);
+            user.update(updateToken);
         } else {
-            RefreshToken newToken = new RefreshToken(tokenDto.getRefreshToken().substring(7), loginRequestDto.getUsername());
+            RefreshToken newToken = new RefreshToken(tokenDto.getRefreshToken().substring(7), username, user);
             refreshTokenRepository.save(newToken);
+            user.update(newToken);
         }
 
         response.addHeader(jwtUtil.ACCESS_KEY, tokenDto.getAccessToken());

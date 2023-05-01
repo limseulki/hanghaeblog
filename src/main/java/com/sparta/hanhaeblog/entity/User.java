@@ -42,10 +42,16 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
     private List<Comment> commentList = new ArrayList<>();
 
+    @OneToOne(cascade = CascadeType.REMOVE)
+    private RefreshToken refreshToken;
+
     public User(String username, String password, UserRoleEnum role) {
         this.username = username;
         this.password = password;
         this.role = role;
     }
 
+    public void update(RefreshToken updateToken) {
+        this.refreshToken = updateToken;
+    }
 }

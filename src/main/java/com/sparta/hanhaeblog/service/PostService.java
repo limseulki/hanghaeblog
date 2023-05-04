@@ -10,6 +10,10 @@ import com.sparta.hanhaeblog.repository.CommentRepository;
 import com.sparta.hanhaeblog.repository.LikeRepository;
 import com.sparta.hanhaeblog.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,11 +42,16 @@ public class PostService {
 
     // 전체 게시글 조회
     @Transactional(readOnly = true)
-    public List<PostResponseDto> getPosts() {
-        // 게시글 작성일 기준 내림차순으로 찾아오기
-        List<Post> posts = postRepository.findAllByOrderByCreatedAtDesc();
+    public List<PostResponseDto> getPosts(int page, int size, String sortBy, boolean isAsc) {
+        // 페이징
+        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<Post> postPage = postRepository.findAll(pageable);
+
         List<PostResponseDto> postList = new ArrayList<>();
-        for(Post post : posts) {
+        for(Post post : postPage) {
             postList.add(new PostResponseDto(post, getCommentList(post.getId())));
         }
         return postList;
@@ -108,5 +117,4 @@ public class PostService {
         }
         return post;
     }
-
 }

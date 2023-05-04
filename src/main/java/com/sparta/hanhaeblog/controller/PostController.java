@@ -1,5 +1,6 @@
 package com.sparta.hanhaeblog.controller;
 
+import com.sparta.hanhaeblog.Exception.CustomException;
 import com.sparta.hanhaeblog.Message.Message;
 import com.sparta.hanhaeblog.dto.PostRequestDto;
 import com.sparta.hanhaeblog.dto.PostResponseDto;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static com.sparta.hanhaeblog.Exception.ErrorCode.CANNOT_FOUND_USER;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
@@ -22,8 +25,11 @@ public class PostController {
 
     // 전체 게시글 조회
     @GetMapping("/posts")
-    public List<PostResponseDto> getPosts() {
-        return postService.getPosts();
+    public List<PostResponseDto> getPosts(@RequestParam("page") int page,
+                                          @RequestParam("size") int size,
+                                          @RequestParam("sortBy") String sortBy,
+                                          @RequestParam("isAsc") boolean isAsc) {
+        return postService.getPosts(page-1, size, sortBy, isAsc);
     }
 
     // 선택한 게시글 조회

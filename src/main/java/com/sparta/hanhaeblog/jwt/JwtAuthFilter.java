@@ -1,6 +1,7 @@
 package com.sparta.hanhaeblog.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sparta.hanhaeblog.Exception.CustomException;
 import com.sparta.hanhaeblog.dto.SecurityExceptionDto;
 import com.sparta.hanhaeblog.entity.User;
 import com.sparta.hanhaeblog.repository.UserRepository;
@@ -50,6 +51,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 jwtExceptionHandler(response, "RefreshToken Expired", HttpStatus.UNAUTHORIZED.value());
                 return;
             }
+        } else {
+            jwtExceptionHandler(response, "AccessToken is Empty", HttpStatus.BAD_REQUEST.value());
         }
         filterChain.doFilter(request, response);    // 다음 filter로 넘어가기
     }

@@ -1,19 +1,30 @@
 package com.sparta.hanhaeblog.config;
 
 import com.sparta.hanhaeblog.jwt.JwtAuthFilter;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.io.IOException;
+
+import static com.sparta.hanhaeblog.Exception.ErrorCode.*;
+import static com.sparta.hanhaeblog.Exception.ErrorResponse.toResponseEntity;
 
 @Configuration
 @RequiredArgsConstructor
@@ -64,10 +75,21 @@ public class WebSecurityConfig {
                 // auth 폴더를 login 없이 허용
                 .requestMatchers("/api/auth/**").permitAll()
                 // 로그인 안 한 사용자도 전체 게시글 목록 조회 가능하도록 허용
-                .requestMatchers("/api/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/posts").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/post/**").permitAll()
                 .requestMatchers(PERMIT_URL_ARRAY).permitAll()
                 // 그 외의 어떤 요청이든 인증처리 하겠다는 의미
                 .anyRequest().authenticated();
+
+        http.exceptionHandling()
+                .authenticationEntryPoint(new AuthenticationEntryPoint() {
+
+                    @Override
+                    public void commence(HttpServletRequest request, HttpServletResponse response,
+                                         AuthenticationException authException) throws IOException, ServletException {
+                        toResponseEntity(CANNOT_FOUND_USER);
+                    }
+                });
 
         // JWT 인증/인가를 사용하기 위한 설정
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

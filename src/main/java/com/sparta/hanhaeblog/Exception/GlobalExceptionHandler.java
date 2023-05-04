@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // CustomException 클래스에서 발생하는 예외 핸들러
+    // CustomException 클래스에서 예외 핸들러
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ErrorResponse> handleCustomException(CustomException e) {
         return ErrorResponse.toResponseEntity(e.getErrorCode());
@@ -30,5 +30,11 @@ public class GlobalExceptionHandler {
             sb.append(", ");
         }
         return ErrorResponse.toResponseEntityValid(sb.toString(), HttpStatus.BAD_REQUEST);
+    }
+
+    // NullpointerException 클래스 예외 핸들러
+    @ExceptionHandler({NullPointerException.class})
+    public ResponseEntity<ErrorResponse> handleNullPointerException(NullPointerException e) {
+        return ErrorResponse.toResponseEntityValid(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 }

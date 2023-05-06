@@ -42,6 +42,10 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
     private List<Comment> commentList = new ArrayList<>();
 
+    @JsonBackReference
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+    private List<Image> imageList = new ArrayList<>();
+
     @OneToOne(cascade = CascadeType.REMOVE)
     private RefreshToken refreshToken;
 

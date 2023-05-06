@@ -3,10 +3,12 @@ package com.sparta.hanhaeblog.service;
 import com.sparta.hanhaeblog.Exception.CustomException;
 import com.sparta.hanhaeblog.Message.Message;
 import com.sparta.hanhaeblog.dto.CommentResponseDto;
+import com.sparta.hanhaeblog.dto.ImageDto;
 import com.sparta.hanhaeblog.dto.PostRequestDto;
 import com.sparta.hanhaeblog.dto.PostResponseDto;
 import com.sparta.hanhaeblog.entity.*;
 import com.sparta.hanhaeblog.repository.CommentRepository;
+import com.sparta.hanhaeblog.repository.ImageRepository;
 import com.sparta.hanhaeblog.repository.LikeRepository;
 import com.sparta.hanhaeblog.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final LikeRepository likeRepository;
+    private final ImageRepository imageRepository;
 
     Post post;
 
@@ -78,6 +81,13 @@ public class PostService {
         post = checkRole(id, user);
         postRepository.deleteById(id);
         return new Message("게시글 삭제 성공", 200);
+    }
+
+    // 사진 등록
+    @Transactional
+    public Long saveImage(ImageDto imageDto, User user) {
+        Image image = imageRepository.save(new Image(imageDto, user));
+        return image.getImageNo();
     }
 
     // 게시글에 달린 댓글 가져오기
